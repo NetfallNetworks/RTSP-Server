@@ -42,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -109,7 +110,7 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
           CoroutineScope(Dispatchers.IO).launch {
             while (cameraFragment.rtspServerStream.videoSource is BufferVideoSource) {
               source.setBuffer(data.clone())
-              delay(1000 / 30)
+              delay((1000 / 30).milliseconds)
             }
           }
         }

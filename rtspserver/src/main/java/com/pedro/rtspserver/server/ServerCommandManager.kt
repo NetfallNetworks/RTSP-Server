@@ -24,6 +24,8 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 class ServerCommandManager: CommandsManager() {
 
   private var serverIp: String = ""
+  private val urlServer: String
+    get() = if (serverIp.contains(":")) "[$serverIp]" else serverIp
   private var serverPort: Int = 0
 
   private val TAG = "ServerCommandManager"
@@ -104,9 +106,10 @@ class ServerCommandManager: CommandsManager() {
     val portsMatcher =
         Pattern.compile("client_port=(\\d+)(?:-(\\d+))?", Pattern.CASE_INSENSITIVE).matcher(request)
     if (portsMatcher.find()) {
-      portsMatcher.group(1)?.toInt()?.let { ports.add(it) }
-      portsMatcher.group(2)?.toInt()?.let { ports.add(it) }
-    } else {
+      portsMatcher.group(1)?.toIntOrNull()?.let { ports.add(it) }
+      portsMatcher.group(2)?.toIntOrNull()?.let { ports.add(it) }
+    }
+    if (ports.size < 2) {
       Log.e(TAG, "UDP ports not found")
       return false
     }
@@ -164,7 +167,7 @@ class ServerCommandManager: CommandsManager() {
 
   private fun createDescribe(cSeq: Int, clientIp: String): String {
     val body = createBody(clientIp)
-    return "${createHeader(cSeq)}Content-Length: ${body.length}\r\nContent-Base: rtsp://$serverIp:$serverPort/\r\nContent-Type: application/sdp\r\n\r\n$body"
+    return "${createHeader(cSeq)}Content-Length: ${body.length}\r\nContent-Base: rtsp://$urlServer:$serverPort/\r\nContent-Type: application/sdp\r\n\r\n$body"
   }
 
   private fun createBody(clientIp: String): String {
@@ -221,11 +224,11 @@ class ServerCommandManager: CommandsManager() {
   private fun createPlay(cSeq: Int): String {
     var info = ""
     if (!videoDisabled) {
-      info += "url=rtsp://$serverIp:$serverPort/streamid=${rtpTracks.trackVideo};seq=1;rtptime=0"
+      info += "url=rtsp://$urlServer:$serverPort/streamid=${rtpTracks.trackVideo};seq=1;rtptime=0"
     }
     if (!audioDisabled) {
       if (!videoDisabled) info += ","
-      info += "url=rtsp://$serverIp:$serverPort/streamid=${rtpTracks.trackAudio};seq=1;rtptime=0"
+      info += "url=rtsp://$urlServer:$serverPort/streamid=${rtpTracks.trackAudio};seq=1;rtptime=0"
     }
     return "${createHeader(cSeq)}Content-Length: 0\r\nRTP-Info: $info\r\nSession: 1185d20035702ca\r\n\r\n"
   }

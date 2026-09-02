@@ -23,7 +23,11 @@ class RtspServerStreamClient(
 
   fun getNumClients(): Int = rtspServer.getNumClients()
 
-  fun getEndPointConnection(): String = "rtsp://${rtspServer.serverIp}:${rtspServer.port}/"
+  fun getEndPointConnection(): String {
+    val ip = rtspServer.serverIp
+    val host = if (ip.contains(":")) "[$ip]" else ip
+    return "rtsp://$host:${rtspServer.port}/"
+  }
 
   override fun setAuthorization(user: String?, password: String?) {
     rtspServer.setAuth(user, password)

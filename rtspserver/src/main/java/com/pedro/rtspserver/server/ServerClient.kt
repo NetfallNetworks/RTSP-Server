@@ -3,7 +3,7 @@ package com.pedro.rtspserver.server
 import android.media.MediaCodec
 import android.util.Log
 import com.pedro.common.ConnectChecker
-import com.pedro.common.clone
+import com.pedro.common.StreamingStatsReport
 import com.pedro.common.frame.MediaFrame
 import com.pedro.common.socket.base.SocketType
 import com.pedro.common.socket.base.TcpStreamSocket
@@ -17,7 +17,6 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.net.DatagramSocket
 import java.nio.ByteBuffer
 
 class ServerClient(
@@ -43,6 +42,9 @@ class ServerClient(
     override fun onNewBitrate(bitrate: Long) {
       listener.onClientNewBitrate(bitrate, this@ServerClient)
     }
+    override fun onStreamingStats(report: StreamingStatsReport) {
+      listener.onClientStreamingStats(report, this@ServerClient)
+    }
     override fun onConnectionFailed(reason: String) {
       listener.onClientDisconnected(this@ServerClient)
     }
@@ -57,11 +59,7 @@ class ServerClient(
       audioCodec = serverCommandManager.audioCodec
       audioDisabled = serverCommandManager.audioDisabled
       videoDisabled = serverCommandManager.videoDisabled
-      val udpPorts = findFreeUdpPortPairs()
-      videoServerPorts[0] = udpPorts[0]
-      videoServerPorts[1] = udpPorts[1]
-      audioServerPorts[0] = udpPorts[2]
-      audioServerPorts[1] = udpPorts[3]
+      if (!findFreeServerPorts()) throw IllegalStateException("No free UDP port pair available")
     }
   }
   private val rtspSender = RtspSender(connectChecker, commandManager).apply {
@@ -219,14 +217,14 @@ class ServerClient(
   fun sendVideoFrame(videoBuffer: ByteBuffer, info: MediaCodec.BufferInfo) {
     if (canSend) {
       if (startTs == 0L) startTs = info.presentationTimeUs
-      rtspSender.sendMediaFrame(videoBuffer.clone(), info.toMediaFrameInfo(startTs), MediaFrame.Type.VIDEO)
+      rtspSender.sendMediaFrame(videoBuffer, info.toMediaFrameInfo(startTs), MediaFrame.Type.VIDEO)
     }
   }
 
   fun sendAudioFrame(audioBuffer: ByteBuffer, info: MediaCodec.BufferInfo) {
     if (canSend) {
       if (startTs == 0L) startTs = info.presentationTimeUs
-      rtspSender.sendMediaFrame(audioBuffer.clone(), info.toMediaFrameInfo(startTs), MediaFrame.Type.AUDIO)
+      rtspSender.sendMediaFrame(audioBuffer, info.toMediaFrameInfo(startTs), MediaFrame.Type.AUDIO)
     }
   }
 
@@ -238,34 +236,5 @@ class ServerClient(
 
   fun setSocketTimeout(timeout: Long) {
     socketTimeout = timeout
-  }
-
-  @Throws(IOException::class)
-  private fun findFreeUdpPortPairs(): IntArray {
-    val reservedSockets = mutableListOf<DatagramSocket>()
-    try {
-      val videoPort = reservePortPair(reservedSockets)
-      val audioPort = reservePortPair(reservedSockets)
-      return intArrayOf(videoPort, videoPort + 1, audioPort, audioPort + 1)
-    } finally {
-      reservedSockets.forEach { runCatching { it.close() } }
-    }
-  }
-
-  //RTP must use an even port and RTCP the next odd port (RFC 3550)
-  @Throws(IOException::class)
-  private fun reservePortPair(reservedSockets: MutableList<DatagramSocket>): Int {
-    repeat(100) {
-      val seed = DatagramSocket(0)
-      val candidate = seed.localPort.let { if (it % 2 == 0) it else it + 1 }
-      seed.close()
-      if (candidate >= 65535) return@repeat
-      try {
-        reservedSockets.add(DatagramSocket(candidate))
-        reservedSockets.add(DatagramSocket(candidate + 1))
-        return candidate
-      } catch (_: IOException) { }
-    }
-    throw IOException("No free UDP port pair available")
   }
 }

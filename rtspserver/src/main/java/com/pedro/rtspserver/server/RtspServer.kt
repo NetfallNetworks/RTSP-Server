@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.util.Log
 import com.pedro.common.AudioCodec
 import com.pedro.common.ConnectChecker
+import com.pedro.common.StreamingStatsReport
 import com.pedro.common.VideoCodec
 import com.pedro.common.onMainThread
 import com.pedro.common.onMainThreadHandler
@@ -221,7 +222,7 @@ class RtspServer(
     synchronized(clients) {
       clients.forEach {
         if (it.isAlive() && it.canSend && !serverCommandManager.videoDisabled) {
-          it.sendVideoFrame(videoBuffer.duplicate(), info)
+          it.sendVideoFrame(videoBuffer, info)
         }
       }
     }
@@ -231,7 +232,7 @@ class RtspServer(
     synchronized(clients) {
       clients.forEach {
         if (it.isAlive() && it.canSend && !serverCommandManager.audioDisabled) {
-          it.sendAudioFrame(audioBuffer.duplicate(), info)
+          it.sendAudioFrame(audioBuffer, info)
         }
       }
     }
@@ -357,6 +358,10 @@ class RtspServer(
 
   override fun onClientNewBitrate(bitrate: Long, client: ServerClient) {
     onMainThreadHandler { clientListener?.onClientNewBitrate(bitrate, client) }
+  }
+
+  override fun onClientStreamingStats(report: StreamingStatsReport, client: ServerClient) {
+    onMainThreadHandler { clientListener?.onClientStreamingStats(report, client) }
   }
 
   private fun getIPAddress(): String {
