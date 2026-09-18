@@ -15,9 +15,10 @@ rootEncoder = "2.7.2"
 # Fork of pedroSG94/RootEncoder at NetfallNetworks/RootEncoder, branch
 # fix/decouple-camera-capture-size: adds prepareVideoCropped(), which decouples camera
 # capture size from encoder output size so a 4:3-native sensor can still produce genuine,
-# undistorted 16:9 output (cropped, not stretched or padded). JitPack builds any commit
-# SHA of a public fork directly -- this pins to that patch commit.
-rootEncoderFork = "a0b981b48a7ea57cdca9bb5423a31c623bb15fb1"
+# undistorted output at a size of its own choosing; and turns video stabilization off
+# unless asked for (some HALs default it on, cropping the field of view). JitPack builds
+# any commit SHA of a public fork directly -- this pins to that branch's head.
+rootEncoderFork = "2abae7392ae948060fbc12efce721f704bc9883c"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
