@@ -12,13 +12,14 @@ constraintlayout = "2.1.4"
 coroutines = "1.10.2"
 ktor = "3.4.1"
 rootEncoder = "2.7.2"
-# Fork of pedroSG94/RootEncoder at NetfallNetworks/RootEncoder, branch
-# fix/decouple-camera-capture-size: adds prepareVideoCropped(), which decouples camera
-# capture size from encoder output size so a 4:3-native sensor can still produce genuine,
-# undistorted output at a size of its own choosing; and turns video stabilization off
-# unless asked for (some HALs default it on, cropping the field of view); and strips
-# SPS/PPS start codes from STAP-A. JitPack builds any commit SHA of a public fork
-# directly -- this pins to that branch's head.
+# Fork of pedroSG94/RootEncoder at NetfallNetworks/RootEncoder. netfall/2.7.2 is upstream
+# 2.7.2 plus prepareVideoCropped() (decouples camera capture size from encoder output size
+# so a 4:3-native sensor can still produce genuine, undistorted output at a size of its own
+# choosing) and turns video stabilization off unless asked for (some HALs default it on,
+# cropping the field of view). This pin, 165122d, is the head of branch
+# fix/rtsp-stapa-start-codes (off netfall/2.7.2, RootEncoder#2), which additionally strips
+# SPS/PPS start codes from STAP-A. JitPack builds any commit SHA of a public fork directly
+# -- this pins to that branch's head.
 rootEncoderFork = "165122d05c219ceddec466869ab73a2b0038eeff"
 
 [libraries]
