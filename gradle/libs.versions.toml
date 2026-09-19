@@ -12,6 +12,13 @@ constraintlayout = "2.1.4"
 coroutines = "1.10.2"
 ktor = "3.4.1"
 rootEncoder = "2.7.2"
+# Fork of pedroSG94/RootEncoder at NetfallNetworks/RootEncoder, branch
+# fix/decouple-camera-capture-size: adds prepareVideoCropped(), which decouples camera
+# capture size from encoder output size so a 4:3-native sensor can still produce genuine,
+# undistorted output at a size of its own choosing; and turns video stabilization off
+# unless asked for (some HALs default it on, cropping the field of view). JitPack builds
+# any commit SHA of a public fork directly -- this pins to that branch's head.
+rootEncoderFork = "2abae7392ae948060fbc12efce721f704bc9883c"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -19,7 +26,7 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
 ktor-network-tls = { module = "io.ktor:ktor-network-tls", version.ref = "ktor" }
-rootEncoder-library = { module = "com.github.pedroSG94.RootEncoder:library", version.ref = "rootEncoder" }
+rootEncoder-library = { module = "com.github.NetfallNetworks.RootEncoder:library", version.ref = "rootEncoderFork" }
 rootEncoder-extra-sources = { module = "com.github.pedroSG94.RootEncoder:extra-sources", version.ref = "rootEncoder" }
 
 [plugins]

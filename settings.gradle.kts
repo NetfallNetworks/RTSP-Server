@@ -20,4 +20,10 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "RTSP-Server"
-include(":app", ":rtspserver")
+// ":app" (pedroSG94's demo) is excluded from this fork's build entirely -- it depends on
+// both ":rtspserver" (which transitively pulls in our patched RootEncoder fork) and
+// upstream RootEncoder's "extra-sources" module directly, which pulls in unpatched
+// upstream "encoder" -- both ending up on its classpath simultaneously fails JitPack's
+// build with duplicate-class errors. We only need ":rtspserver" published; the demo app
+// was never part of what this fork exists for.
+include(":rtspserver")
