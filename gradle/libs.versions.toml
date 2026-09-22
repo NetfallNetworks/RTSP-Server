@@ -20,7 +20,7 @@ rootEncoder = "2.7.2"
 # fix/rtsp-stapa-start-codes (off netfall/2.7.2, RootEncoder#2), which additionally strips
 # SPS/PPS start codes from STAP-A. JitPack builds any commit SHA of a public fork directly
 # -- this pins to that branch's head.
-rootEncoderFork = "165122d05c219ceddec466869ab73a2b0038eeff"
+rootEncoderFork = "622284165d6dd17b1861d9f2cdfccf004b91af62"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
