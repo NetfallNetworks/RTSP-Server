@@ -68,3 +68,24 @@ When the app fails with `Could not find com.github.NetfallNetworks:RTSP-Server:<
 - If it is a transient failure, someone signed in at
   [jitpack.io](https://jitpack.io/#NetfallNetworks/RTSP-Server) must re-request that commit
 - Failing that, a new commit gets a new SHA and therefore a fresh build
+
+### JitPack keys builds by version *string*, not by commit
+
+This one cost an hour. A re-requested build can succeed and the artifact can still
+404, because **the short SHA and the full SHA are different versions to JitPack**,
+with separate artifact paths and separate build records — even though they are the
+same commit.
+
+That is exactly what happened above: the failed build was recorded against
+`5f724ceaa2f5e370d58c186496602b2c4d8c1281`, the successful rebuild landed under
+`5f724ceaa2`, and a pin naming the full SHA kept resolving to the cached failure.
+The build API reports the true commit either way, which is how to tell:
+
+```
+GET https://jitpack.io/api/builds/com.github.NetfallNetworks/RTSP-Server/5f724ceaa2
+-> {"version":"5f724ceaa2","status":"ok",
+    "commit":"5f724ceaa2f5e370d58c186496602b2c4d8c1281"}
+```
+
+So when a pin will not resolve, check **both** spellings before concluding the
+build failed, and pin whichever one actually has an artifact.
